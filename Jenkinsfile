@@ -30,9 +30,9 @@ pipeline{
         stage ('Deploy to EKS') {
             steps {
                   withAWS(region:'us-west-2',credentials:'aws-credentials') {
-                    sh "aws eks --region eu-central-1 update-kubeconfig --name CapstoneEKS-VUUZkwHTDVPa"
-                    sh "kubectl apply -f aws/aws-auth-cm.yaml"
-                    sh "kubectl set image deployments/capstone-app capstone-app=${registry}:latest"
+                    sh "aws eks --region us-west-2 update-kubeconfig --name EKSCluster-9Vdzvg9JaRtz"
+                    sh "kubectl apply -f aws-auth-cm.yaml"
+                    sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]}"
                     sh "kubectl apply -f app-deploy.yaml"
 		    sh "kubectl apply -f app-service.yaml"
                     sh "kubectl get nodes"
