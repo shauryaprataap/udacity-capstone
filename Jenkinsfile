@@ -38,7 +38,7 @@ pipeline{
 		            sh "kubectl apply -f app-service.yaml"
                     sh "kubectl get nodes"
                     sh "kubectl get pods"
-                    sh "aws cloudformation update-stack --stack-name udacity-workers --template-body udacity-workers.yaml  --parameters udacity-workers-params.json --capabilities CAPABILITY_IAM"
+                    sh "update_stack.sh udacity-workers udacity-workers.yaml udacity-workers-params.json"
                   }
               }
            }
