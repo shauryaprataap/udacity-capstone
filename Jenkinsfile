@@ -38,7 +38,7 @@ pipeline{
 		            sh "kubectl apply -f app-service.yaml"
                     sh "kubectl get nodes"
                     sh "kubectl get pods"
-                    sh "./update_stack.sh udacity-workers udacity-workers.yaml udacity-workers-params.json"
+                    sh "./update-stack.sh udacity-workers udacity-workers.yaml udacity-workers-params.json"
                   }
               }
            }
