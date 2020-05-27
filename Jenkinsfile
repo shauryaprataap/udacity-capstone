@@ -2,18 +2,10 @@ pipeline{
     agent any
 
     stages{
-        stage("Linting"){
-            steps{
-                echo "Linting HTML Code"
-                sh "tidy --drop-empty-elements false --drop-empty-paras false -qe public/*.html"
-                echo "Linting Dockerfile"
-                sh "hadolint Dockerfile"
-            }
-        }
         stage("Build Docker Image"){
             steps{
                 script {
-                    app_image = docker.build("dbarahona/nd9991-capstone-app")
+                    app_image = docker.build("shauryapratap/udacity-capstone")
                 }
             }
         }
@@ -29,7 +21,7 @@ pipeline{
         }
         stage ('Deploy to EKS') {
             steps {
-                sh "kubectl set image deployments/nd9991-capstone-app nd9991-capstone-app=dbarahona/nd9991-capstone-app:${env.GIT_COMMIT[0..7]} --record"
+                sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]} --record"
             }
         }
     }
