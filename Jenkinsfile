@@ -5,7 +5,7 @@ pipeline{
         stage("Build Docker Image"){
             steps{
                 script {
-                    sh docker build -t shauryapratap/udacity-capstone .
+                    app_image = docker.build("shauryapratap/udacity-capstone")
                 }
             }
         }
