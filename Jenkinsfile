@@ -5,11 +5,6 @@ pipeline{
         stage("Build Docker Image"){
             steps{
                 script {
-		    sh 'sudo groupadd docker'
-                    sh 'sudo usermod -aG docker ${USER}'
-                    sh 'su -s ${USER}'
-                    sh 'sudo chown "$USER":"$USER" /home/"$USER"/.docker -R'
-                    sh 'sudo chmod g+rwx "$HOME/.docker" -R'
                     app_image = docker.build("shauryapratap/udacity-capstone")
                 }
             }
