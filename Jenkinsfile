@@ -28,8 +28,8 @@ pipeline{
             }
         }
         stage('Deploying') {
-           echo 'Deploying to AWS...'
-           dir ('./')  {
+          echo 'Deploying to AWS...'
+          dir ('./') {
                   withAWS(region:'us-west-2',credentials:'aws-credentials') {
                     sh "aws eks --region us-west-2 update-kubeconfig --name EKSCluster-9Vdzvg9JaRtz"
                     sh "kubectl apply -f aws-auth-cm.yaml"
@@ -41,6 +41,7 @@ pipeline{
                     sh "aws cloudformation update-stack --stack-name udacity-workers --template-body  --parameters udacity-workers-params.json --capabilities CAPABILITY_IAM"
                   }
               }
+           }
         }
     }
 }
