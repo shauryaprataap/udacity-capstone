@@ -10,10 +10,6 @@ node {
       echo "Branch: ${env.BRANCH_NAME}"
       sh 'docker -v'
     }
-    stage("Linting") {
-      echo 'Linting...'
-      sh '/home/ubuntu/.local/bin/hadolint Dockerfile'
-    }
     stage('Building image') {
 	    echo 'Building Docker image...'
       withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
