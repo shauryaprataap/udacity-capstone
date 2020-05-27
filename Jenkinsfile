@@ -1,29 +1,36 @@
-node {
-    def registry = 'shauryapratap/udacity-capstone'
-    stage('Checking out git repo') {
-      echo 'Checkout...'
-      checkout scm
-    }
-    stage('Checking environment') {
-      echo 'Checking environment...'
-      sh 'git --version'
-      echo "Branch: ${env.BRANCH_NAME}"
-      sh 'docker -v'
-    }
-    stage("Build Docker Image"){
-      steps{
-        script {
-          app_image = docker.build("shauryapratap/udacity-capstone")
+pipeline{
+    agent any
+
+    stages{
+        stage("Linting"){
+            steps{
+                echo "Linting HTML Code"
+                sh "tidy --drop-empty-elements false --drop-empty-paras false -qe public/*.html"
+                echo "Linting Dockerfile"
+                sh "hadolint Dockerfile"
+            }
         }
-      }
-    }
-    stage ('Deploy to EKS') {
-      steps {
-        sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]} --record"
-      }
-    }
-    stage("Cleaning up") {
-      echo 'Cleaning up...'
-      sh "docker system prune"
+        stage("Build Docker Image"){
+            steps{
+                script {
+                    app_image = docker.build("shauryapratap/udacity-capstone")
+                }
+            }
+        }
+        stage ('Push Image to Registry') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_id') {
+                        app_image.push("${env.GIT_COMMIT[0..7]}")
+                        app_image.push("latest")
+                    }
+                }
+            }
+        }
+        stage ('Deploy to EKS') {
+            steps {
+                sh "kubectl set image deployments/udacity-capstone udacity-capstone-app=shauryapratap/udacity-capstone-app:${env.GIT_COMMIT[0..7]} --record"
+            }
+        }
     }
 }
