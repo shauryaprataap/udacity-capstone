@@ -5,6 +5,7 @@ pipeline{
         stage("Build Docker Image"){
             steps{
                 script {
+		    sh "chmod 777 /var/run/docker.sock"
                     app_image = docker.build("shauryapratap/udacity-capstone")
                 }
             }
