@@ -1,28 +1,44 @@
-pipeline{
-    agent any
-
-    stages{
-        stage("Build Docker Image"){
-            steps{
-                script {
-                    app_image = docker.build("shauryapratap/udacity-capstone")
-                }
-            }
+node {
+    def registry = 'shauryapratap/udacity-capstone'
+    stage('Checking out git repo') {
+      echo 'Checkout...'
+      checkout scm
+    }
+    stage('Checking environment') {
+      echo 'Checking environment...'
+      sh 'git --version'
+      echo "Branch: ${env.BRANCH_NAME}"
+      sh 'docker -v'
+    }
+    stage("Linting") {
+      echo 'Linting...'
+      sh '/home/ubuntu/.local/bin/hadolint Dockerfile'
+    }
+    stage('Building image') {
+	    echo 'Building Docker image...'
+      withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+	     	sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+	     	sh "docker build -t ${registry} ."
+	     	sh "docker tag ${registry} ${registry}"
+	     	sh "docker push ${registry}"
+      }
+    }
+    stage('Deploying') {
+      echo 'Deploying to AWS...'
+      dir ('./') {
+        withAWS(credentials: 'aws-credentials', region: 'eu-central-1') {
+            sh "aws eks --region us-west-2 update-kubeconfig --name EKSCluster-9Vdzvg9JaRtz"
+            sh "kubectl apply -f aws/aws-auth-cm.yaml"
+            sh "kubectl set image deployments/capstone-app capstone-app=${registry}:latest"
+            sh "kubectl apply -f app-deploy.yml"
+            sh "kubectl get nodes"
+            sh "kubectl get pods"
+            sh "aws cloudformation update-stack --stack-name udacity-capstone-nodes --template-body file://udacity-workers.yaml --parameters file://udacity-workers-params.json --capabilities CAPABILITY_IAM"
         }
-        stage ('Push Image to Registry') {
-            steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub_id') {
-                        app_image.push("${env.GIT_COMMIT[0..7]}")
-                        app_image.push("latest")
-                    }
-                }
-            }
-        }
-        stage ('Deploy to EKS') {
-            steps {
-                sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]} --record"
-            }
-        }
+      }
+    }
+    stage("Cleaning up") {
+      echo 'Cleaning up...'
+      sh "docker system prune"
     }
 }
