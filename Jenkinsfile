@@ -27,8 +27,9 @@ pipeline{
                 }
             }
         }
-        stage ('Deploy to EKS') {
-            steps {
+        stage('Deploying') {
+           echo 'Deploying to AWS...'
+           dir ('./')  {
                   withAWS(region:'us-west-2',credentials:'aws-credentials') {
                     sh "aws eks --region us-west-2 update-kubeconfig --name EKSCluster-9Vdzvg9JaRtz"
                     sh "kubectl apply -f aws-auth-cm.yaml"
