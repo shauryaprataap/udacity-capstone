@@ -29,8 +29,10 @@ pipeline{
         }
         stage ('Deploy to EKS') {
             steps {
+	      withAWS(region:'us-west-2',credentials:'aws-credentials') {
                 sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]} --record"
             }
+          }
         }
         }
     }
