@@ -27,21 +27,10 @@ pipeline{
                 }
             }
         }
-        stage('Deploying') {
+        stage ('Deploy to EKS') {
             steps {
-                dir("./") {
-                  withAWS(region:'us-west-2',credentials:'aws-credentials') {
-                    sh "aws eks --region us-west-2 update-kubeconfig --name EKSCluster-9Vdzvg9JaRtz"
-                    sh "kubectl apply -f aws-auth-cm.yaml"
-                    sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]}"
-                    sh "kubectl apply -f app-deploy.yaml"
-		            sh "kubectl apply -f app-service.yaml"
-                    sh "kubectl get nodes"
-                    sh "kubectl get pods"
-                    sh "./create-stack.sh udacity-workers2 udacity-workers.yaml udacity-workers-params.json"
-                  }
-              }
-           }
+                sh "kubectl set image deployments/udacity-capstone udacity-capstone=shauryapratap/udacity-capstone:${env.GIT_COMMIT[0..7]} --record"
+            }
         }
         }
     }
